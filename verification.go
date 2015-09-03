@@ -1,8 +1,10 @@
 package webhook
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
 type Verification struct {
@@ -12,10 +14,17 @@ type Verification struct {
 }
 
 func CallVerification(url string, message Verification) {
-	fmt.Println("Dummy call: " + string(response(message))[:])
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody(message)))
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 }
 
-func response(cb Verification) []byte {
+func jsonBody(cb Verification) []byte {
 	b, err := json.Marshal(cb)
 	if err != nil {
 		fmt.Println("error:", err)
